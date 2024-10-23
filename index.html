@@ -1,48 +1,49 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio Transcription</title>
+    <title>Trascrizione Audio Locale</title>
 </head>
 <body>
-    <h1>Trascrizione Audio in Tempo Reale</h1>
-    <button id="startBtn">Inizia trascrizione</button>
-    <button id="stopBtn">Ferma trascrizione</button>
-    <p id="transcript">Trascrizione apparirà qui...</p>
+    <h1>Carica un file audio per la trascrizione</h1>
+    <input type="file" id="audioFile" accept="audio/*">
+    <button id="transcribeBtn">Trascrivi</button>
+    <pre id="transcript"></pre>
 
     <script>
+        const audioInput = document.getElementById('audioFile');
+        const transcribeBtn = document.getElementById('transcribeBtn');
         const transcriptElem = document.getElementById('transcript');
-        const startBtn = document.getElementById('startBtn');
-        const stopBtn = document.getElementById('stopBtn');
 
-        // Controlliamo se il browser supporta la Web Speech API
-        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        recognition.lang = 'it-IT'; // Imposta la lingua italiana
-        recognition.interimResults = false; // Mostra solo risultati finali
+        let audioFile;
 
-        // Funzione per avviare la trascrizione
-        startBtn.addEventListener('click', () => {
-            recognition.start();
+        audioInput.addEventListener('change', (event) => {
+            audioFile = event.target.files[0];
         });
 
-        // Funzione per fermare la trascrizione
-        stopBtn.addEventListener('click', () => {
-            recognition.stop();
-        });
+        transcribeBtn.addEventListener('click', async () => {
+            if (!audioFile) {
+                alert('Per favore, carica un file audio prima.');
+                return;
+            }
 
-        // Quando riceviamo un risultato
-        recognition.addEventListener('result', (event) => {
-            const transcript = Array.from(event.results)
-                .map(result => result[0].transcript)
-                .join('');
+            const transcript = await transcribeWithLocalServer(audioFile);
             transcriptElem.textContent = transcript;
         });
 
-        // Gestione degli errori
-        recognition.addEventListener('error', (event) => {
-            console.error('Errore:', event.error);
-        });
+        async function transcribeWithLocalServer(file) {
+            const formData = new FormData();
+            formData.append('audio_file', file);
+
+            const response = await fetch('http://localhost:3000/transcribe', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            return data.transcript;
+        }
     </script>
 </body>
 </html>
