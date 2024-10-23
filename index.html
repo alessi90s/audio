@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Transcription</title>
+</head>
+<body>
+    <h1>Trascrizione Audio in Tempo Reale</h1>
+    <button id="startBtn">Inizia trascrizione</button>
+    <button id="stopBtn">Ferma trascrizione</button>
+    <p id="transcript">Trascrizione apparirà qui...</p>
+
+    <script>
+        const transcriptElem = document.getElementById('transcript');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+
+        // Controlliamo se il browser supporta la Web Speech API
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'it-IT'; // Imposta la lingua italiana
+        recognition.interimResults = false; // Mostra solo risultati finali
+
+        // Funzione per avviare la trascrizione
+        startBtn.addEventListener('click', () => {
+            recognition.start();
+        });
+
+        // Funzione per fermare la trascrizione
+        stopBtn.addEventListener('click', () => {
+            recognition.stop();
+        });
+
+        // Quando riceviamo un risultato
+        recognition.addEventListener('result', (event) => {
+            const transcript = Array.from(event.results)
+                .map(result => result[0].transcript)
+                .join('');
+            transcriptElem.textContent = transcript;
+        });
+
+        // Gestione degli errori
+        recognition.addEventListener('error', (event) => {
+            console.error('Errore:', event.error);
+        });
+    </script>
+</body>
+</html>
